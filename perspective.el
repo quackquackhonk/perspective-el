@@ -200,7 +200,8 @@ After BODY is evaluated, frame parameters are reset to their original values."
   (last-switch-time (current-time))
   (created-time (current-time))
   (window-configuration (current-window-configuration))
-  (point-marker (point-marker)))
+  (point-marker (point-marker))
+  tabs)
 
 (defmacro with-current-perspective (&rest body)
   "Operate on BODY when we are in a perspective."
@@ -572,6 +573,7 @@ perspective-local variables to `persp-curr'"
              (let ((name (car c)))
                (list name (symbol-value name))))
            (persp-local-variables (persp-curr))))
+    (setf (persp-tabs (persp-curr)) (tab-bar-tabs))
     (setf (persp-window-configuration (persp-curr)) (current-window-configuration))
     (setf (persp-point-marker (persp-curr)) (point-marker))))
 
@@ -819,6 +821,10 @@ If NORECORD is non-nil, do not update the
   (set-window-configuration (persp-window-configuration persp))
   (when (marker-position (persp-point-marker persp))
     (goto-char (persp-point-marker persp)))
+  (let ((pt (persp-tabs (persp-curr))))
+    (if pt
+        (tab-bar-tabs-set pt)
+      (tab-bar-close-other-tabs)))
   (persp-update-modestring)
   ;; force update of `current-buffer'
   (set-buffer (window-buffer))
